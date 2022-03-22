@@ -88,6 +88,3 @@ def K_means(ls_nclusters, ls_seed):
 #     X = X.fillna(X.mean())
 #     importances, imp_names = feature_importance_select(X, y)
 
-
-
-

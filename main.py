@@ -7,7 +7,6 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import MinMaxScaler
 
-
 # Feature selection types
 def correlation_coefficent_select(predictor_df, outcome):
     '''Based on the pearson's correlation coefficents of certain variables with the outcome.'''
@@ -41,42 +40,53 @@ def feature_importance_select(predictor_df, outcome):
     for feature in zip(feat_labels, regressor.feature_importances_):
         feature_importances.append(feature)
 
-    return feature_importances
+    # return feature_importances
 
-    # # Create a selector object that will use the random forest classifier to identify
-    # # features that have an importance of more than 0.15
-    # sfm = SelectFromModel(regressor, threshold=0.15)
-    #
-    # # Train the selector
-    # sfm.fit(X_train, y_train)
-    #
-    # # Print the names of the most important features
-    # for feature_list_index in sfm.get_support(indices=True):
-    #     print(feat_labels[feature_list_index])
-    #
+    # Create a selector object that will use the random forest classifier to identify
+    # features that have an importance of more than 0.15
+    sfm = SelectFromModel(regressor, threshold=0.05)
 
-if __name__ == '__main__':
-    # Just using th eti and jank csv (bysite)
-    ej_df = pd.read_csv('/Users/etiennechenevert/Documents/CRMSresearch/projGit/EtiAndJank.csv')
-    ej_df = ej_df.dropna(subset=['Elevation above/below NAVD 88\n(m)'])
-    y = ej_df['Elevation above/below NAVD 88\n(m)']
-    X = ej_df.drop(['Hydrologic Basin Type',
-                    'CRMS Site',
-                    'Geographic Region',
-                    'Unnamed: 0', 'Simple site',
-                    'Basins',
-                    'Community',
-                    'Binary Moisture Content',
-                    'Binary Organic Fraction',
-                    'Particle Size Standard Deviation (phi)',
-                    'Year (yyyy)_y', 'Month (mm)_y',
-                    'Year (yyyy)_x.1', 'Month (mm)_x.1',
-                    'Rod depth below land surface \n(m)',
-                    'Pleistocene depth below land surface \n(m)',
-                    'Rod depth to Pleistocene \n(m)',
-                    'Elevation above/below NAVD 88\n(m)'], axis=1)
-    X = X.fillna(X.mean())
-    imps = feature_importance_select(X, y)
+    # Train the selector
+    sfm.fit(X_train, y_train)
+
+    important_names = []
+    # Print the names of the most important features
+    for feature_list_index in sfm.get_support(indices=True):
+        important_names.append(feat_labels[feature_list_index])
+
+    return feature_importances, important_names
+
+def genetic_algorithm():
+    '''Creates a genetic algorithm model'''
+
+def PCA(X, y, n_components):
+    ''''''
+
+def K_means(ls_nclusters, ls_seed):
+    ''''''
+
+# if __name__ == '__main__':
+#     # Just using th eti and jank csv (bysite)
+#     ej_df = pd.read_csv('/Users/etiennechenevert/Documents/CRMSresearch/projGit/EtiAndJank.csv')
+#     ej_df = ej_df.dropna(subset=['Elevation above/below NAVD 88\n(m)'])
+#     y = ej_df['Elevation above/below NAVD 88\n(m)']
+#     X = ej_df.drop(['Hydrologic Basin Type',
+#                     'CRMS Site',
+#                     'Geographic Region',
+#                     'Unnamed: 0', 'Simple site',
+#                     'Basins',
+#                     'Community',
+#                     'Binary Moisture Content',
+#                     'Binary Organic Fraction',
+#                     'Particle Size Standard Deviation (phi)',
+#                     'Year (yyyy)_y', 'Month (mm)_y',
+#                     'Year (yyyy)_x.1', 'Month (mm)_x.1',
+#                     'Rod depth below land surface \n(m)',
+#                     'Pleistocene depth below land surface \n(m)',
+#                     'Rod depth to Pleistocene \n(m)',
+#                     'Elevation above/below NAVD 88\n(m)'], axis=1)
+#     X = X.fillna(X.mean())
+#     importances, imp_names = feature_importance_select(X, y)
 
 
 

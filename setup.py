@@ -6,6 +6,5 @@ setup(name='mlimplementation',
       author='Etienne Chenevert',
       author_email='etachen@iu.edu',
       packages=['mlimplementation'],
-      # package_data={"": ["DATA/*.csv"]},
       install_requires=['scikit-learn']
 )

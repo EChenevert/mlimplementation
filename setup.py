@@ -6,5 +6,5 @@ setup(name='mlimplementation',
       author='Etienne Chenevert',
       author_email='etachen@iu.edu',
       packages=['mlimplementation'],
-      install_requires=['scikit-learn']
+      install_requires=['scikit-learn', 'pandas', 'numpy']
 )

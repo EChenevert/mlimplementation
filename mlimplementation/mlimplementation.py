@@ -10,6 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn import metrics
 from gplearn.genetic import SymbolicRegressor
 from sympy import sympify
+from sklearn.linear_model import LinearRegression
 
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
@@ -41,6 +42,34 @@ def plot_feat_imps(feats):
     plt.ylabel('Features', fontsize=25, weight = 'bold')
     plt.title('Feature Importance', fontsize=25, weight = 'bold')
 
+def mlregression(X, y):
+    ''' Creates a simple multiple linear regression model'''
+    scaler = MinMaxScaler()
+    Xin = scaler.fit_transform(X)
+    # Test train and split the data
+    X_Train, X_Test, y_train, y_test = train_test_split(Xin, y, test_size=0.2, random_state=0)
+
+    mlr = LinearRegression().fit(X_Train, y_train)
+
+    y_pred = mlr.predict(X_Test)
+
+    r, _ = pearsonr(np.squeeze(y_test), np.squeeze(y_pred))
+    # r = np.corrcoef(y_test, y_pred)
+    model_performance = {
+        'Mean Absolute Error (cm):': metrics.mean_absolute_error(y_test, y_pred),
+        # No dividing done because I use a StandardScalar which should make units "equal"
+        # 'Mean Squared Error:': metrics.mean_squared_error(y_test, y_pred),
+        'Root Mean Squared Error (cm):': np.sqrt(metrics.mean_squared_error(y_test, y_pred)),
+        # No dividing done because I use a StandardScalar which should make units "equal"
+        'R squared:': metrics.r2_score(y_test, y_pred),
+        'Pearson Correlation Coefficient': r
+    }
+    # pd.DataFrame.from_dict(model_performance, orient='index', columns = 'MLR')
+
+
+
+    return pd.DataFrame.from_dict(model_performance, orient='index', columns=['MLR'])
+
 
 def random_forest(X, y):
     '''This function will run a random forest machine learning algorithm on inputted
@@ -69,14 +98,14 @@ def random_forest(X, y):
         'Pearson Correlation Coefficient': r
     }
 
-    plt.figure()
-    plt.scatter(y_test, y_pred)
-    plt.show()
+    # plt.figure()
+    # plt.scatter(y_test, y_pred)
+    # plt.show()
 
     return pd.DataFrame.from_dict(model_performance, orient='index', columns=['RF'])
 
 
-def feature_importance_select(predictor_df, outcome):
+def feature_importance_select(predictor_df, outcome, thres=0.033):
     ''' Is a recursive feature elimination method. Based on a random forest model
     Help from: https://chrisalbon.com/code/machine_learning/trees_and_forests/feature_selection_using_random_forest/
     '''
@@ -106,7 +135,7 @@ def feature_importance_select(predictor_df, outcome):
 
     # Create a selector object that will use the random forest classifier to identify
     # features that have an importance of more than 0.15
-    sfm = SelectFromModel(regressor, threshold=0.03)
+    sfm = SelectFromModel(regressor, threshold=thres)  # 0.05
 
     # Train the selector
     sfm.fit(X_train, y_train)
@@ -166,6 +195,10 @@ def symbolic_regression(X, y):
         'Pearson Correlation Coefficient': r
     }
 
+    plt.figure()
+    plt.scatter(y_test, y_pred)
+    plt.show()
+
     return pd.DataFrame.from_dict(model_performance, orient='index', columns=['SR']), equation
 
 
@@ -208,51 +241,82 @@ def K_means(ls_nclusters, ls_seed):
 
 
 if __name__ == '__main__':
-    # Just using th eti and jank csv (bysite)
-    ej_df = pd.read_csv('/Users/etiennechenevert/Documents/CRMSresearch/projGit/seasonalavg.csv')
+
+#     # Just using th eti and jank csv (bysite)
+#     ej_df = pd.read_csv('/Users/etiennechenevert/Documents/CRMSresearch/projGit/seasonalavg.csv')
+#     ej_df = ej_df.dropna(subset=['Average Accretion (mm)'])
+#     y = ej_df['Average Accretion (mm)']
+#     X = ej_df.drop(['Simple site',
+#                     'Particle Size Standard Deviation (phi)',
+#                     'Year (yyyy)_y',
+#                     'Year (yyyy)_x.1',
+#                     'Measurement Depth (ft)',
+#                     'Observation Length \n(years)',
+#                     'Longitude', 'Season',
+#                     'Turbidity (FNU)', 'Chlorophyll a (ug/L)',
+#                     'Total Nitrogen (mg/L)', 'Total Kjeldahl Nitrogen (mg/L)',
+#                     'Nitrate as N (mg/L)', 'Nitrite as N (mg/L)',
+#                     'Nitrate+Nitrite as N (unfiltered; mg/L)',
+#                     'Nitrate+Nitrite as N (filtered; mg/L)',
+#                     'Ammonium as N (unfiltered; mg/L)', 'Ammonium as N (filtered; mg/L)',
+#                     'Total Phosphorus (mg/L)', 'Orthophosphate as P (unfiltered; mg/L)',
+#                     'Orthophosphate as P (filtered; mg/L)', 'Silica (unfiltered; mg/L)',
+#                     'Silica (filtered; mg/L)', 'Total Suspended Solids (mg/L)',
+#                     'Volatile Suspended Solids (mg/L)', 'Secchi (ft)',
+#                     'Fecal Coliform (MPN/100ml)', 'pH (pH units)', 'Velocity (ft/sec)',
+#                     'Radiometric Dating Method and Units',
+#                     'Isotope Concentration', 'Latitude',
+#                     'Accretion Measurement 1 (mm)',
+#                     'Accretion Measurement 2 (mm)', 'Accretion Measurement 3 (mm)',
+#                     'Accretion Measurement 4 (mm)', 'Direction (Collar Number)',
+#                     'Direction (Compass Degrees)', 'Pin Number',
+#                     'Observed Pin Height (mm)', 'Verified Pin Height (mm)',
+#                     'Vertical Accretion Rate \n(mm/yr)', 'Vertical Accretion \nRMS Error ',
+#                     'Surface-Elevation Change Rate \n(mm/yr)', 'Year (yyyy)_y.1',
+#                     'Accretion Surplus/Deficit\n(mm/yr)', 'Average Flood Depth Jank (mm)',
+#                     'Surface-Elevation Change \nRMS Error ',
+#                     'Deep Subsidence Rate \n(mm/yr)',
+#                     'Elevation above/below NAVD 88\n(m)',
+#                     'Average Accretion (mm)'], axis=1)
+#     X = X.fillna(X.mean())
+#     # Test feature importances
+#     importances, imp_names = feature_importance_select(X, y)
+#     # plot ideal
+# # Longitude being highlighted as an important feature likely means we need to split the data between western coast and
+# # eastern LA coast
+# # 'Oberservation Length (ft) also being highlighted as an important feature may be highlighting a sampling bias in the data
+#     # Make dataset of selected important features
+#     Ximp = X[imp_names]
+#     # Run symbolic regression
+#     sr, eq = symbolic_regression(Ximp, y)
+#     # Run random forest model
+#     Ximp_rf = X[imp_names]
+#     rf = random_forest(Ximp_rf, y)
+
+
+    ej_df = pd.read_csv('/Users/etiennechenevert/Documents/CRMSresearch/datasets/byyear_bymonth_bysite_EASTERN.csv')
     ej_df = ej_df.dropna(subset=['Average Accretion (mm)'])
     y = ej_df['Average Accretion (mm)']
     X = ej_df.drop(['Simple site',
                     'Particle Size Standard Deviation (phi)',
-                    'Year (yyyy)_y',
-                    'Year (yyyy)_x.1',
-                    'Measurement Depth (ft)',
-                    'Observation Length \n(years)',
-                    'Longitude', 'Season',
-                    'Turbidity (FNU)', 'Chlorophyll a (ug/L)',
-                    'Total Nitrogen (mg/L)', 'Total Kjeldahl Nitrogen (mg/L)',
-                    'Nitrate as N (mg/L)', 'Nitrite as N (mg/L)',
-                    'Nitrate+Nitrite as N (unfiltered; mg/L)',
-                    'Nitrate+Nitrite as N (filtered; mg/L)',
-                    'Ammonium as N (unfiltered; mg/L)', 'Ammonium as N (filtered; mg/L)',
-                    'Total Phosphorus (mg/L)', 'Orthophosphate as P (unfiltered; mg/L)',
-                    'Orthophosphate as P (filtered; mg/L)', 'Silica (unfiltered; mg/L)',
-                    'Silica (filtered; mg/L)', 'Total Suspended Solids (mg/L)',
-                    'Volatile Suspended Solids (mg/L)', 'Secchi (ft)',
-                    'Fecal Coliform (MPN/100ml)', 'pH (pH units)', 'Velocity (ft/sec)',
-                    'Radiometric Dating Method and Units',
-                    'Isotope Concentration', 'Latitude',
-                    'Accretion Measurement 1 (mm)',
-                    'Accretion Measurement 2 (mm)', 'Accretion Measurement 3 (mm)',
-                    'Accretion Measurement 4 (mm)', 'Direction (Collar Number)',
-                    'Direction (Compass Degrees)', 'Pin Number',
-                    'Observed Pin Height (mm)', 'Verified Pin Height (mm)',
-                    'Vertical Accretion Rate \n(mm/yr)', 'Vertical Accretion \nRMS Error ',
-                    'Surface-Elevation Change Rate \n(mm/yr)', 'Year (yyyy)_y.1',
-                    'Accretion Surplus/Deficit\n(mm/yr)', 'Average Flood Depth Jank (mm)',
-                    'Elevation above/below NAVD 88\n(m)',
-                    'Average Accretion (mm)'], axis=1)
-    X = X.fillna(X.mean())
+                    'Longitude', 'Year (yyyy)', 'Month (mm)',
+                     'Latitude',
+                    'Direction (Collar Number)',
+                    'Direction (Compass Degrees)', 'West and East',
+                    'Observed Pin Height (mm)', 'Basins', 'Community', 'Group', 'Unnamed: 0',
+                    'Overstory Tree DBH Distance Aboveground (cm)', 'Average Accretion (mm)'], axis=1)
+    X = X.fillna(X.median())
     # Test feature importances
     importances, imp_names = feature_importance_select(X, y)
     # plot ideal
-# Longitude being highlighted as an important feature likely means we need to split the data between western coast and
-# eastern LA coast
-# 'Oberservation Length (ft) also being highlighted as an important feature may be highlighting a sampling bias in the data
+    # Longitude being highlighted as an important feature likely means we need to split the data between western coast and
+    # eastern LA coast
+    # 'Oberservation Length (ft) also being highlighted as an important feature may be highlighting a sampling bias in the data
     # Make dataset of selected important features
     Ximp = X[imp_names]
     # Run symbolic regression
     sr, eq = symbolic_regression(Ximp, y)
     # Run random forest model
-    Ximp_rf = X[imp_names]
-    rf = random_forest(Ximp_rf, y)
+    rf = random_forest(Ximp, y)
+    # Run a multiple linear regression
+    mlr = mlregression(Ximp, y)
